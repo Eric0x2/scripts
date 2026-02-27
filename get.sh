@@ -66,6 +66,20 @@ EOF
 
 echo "fs.file-max = 2097152" >> /etc/sysctl.conf
 sysctl -w fs.file-max=2097152
+
+# Network tuning for high-concurrency workloads
+cat >> /etc/sysctl.conf << 'SYSEOF'
+net.core.somaxconn = 65535
+net.ipv4.tcp_max_syn_backlog = 65535
+net.ipv4.tcp_tw_reuse = 1
+net.ipv4.tcp_fin_timeout = 10
+net.core.netdev_max_backlog = 65535
+net.ipv4.tcp_max_tw_buckets = 2000000
+net.ipv4.ip_local_port_range = 1024 65535
+net.core.rmem_max = 16777216
+net.core.wmem_max = 16777216
+SYSEOF
+sysctl -p
 systemctl daemon-reload
 
 
@@ -140,7 +154,7 @@ TUNING_CONTENT='
 tuning  {
   maxConnections          10000
   maxSSLConnections       10000
-  connTimeout             300
+  connTimeout             30
   maxKeepAliveReq         10000
   keepAliveTimeout        5
   sndBufSize              0
@@ -152,7 +166,7 @@ tuning  {
   maxDynRespSize          2047M
   enableGzipCompress      1
   enableDynGzipCompress   1
-  gzipCompressLevel       6
+  gzipCompressLevel       4
   gzipAutoUpdateStatic    1
   gzipStaticCompressLevel 6
   brStaticCompressLevel   6
