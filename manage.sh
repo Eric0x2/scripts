@@ -167,7 +167,7 @@ pcKeepAliveTimeout      30
 respBuffer              0
 autoStart               2
 path                    /usr/local/lsws/lsphp74/bin/lsphp
-backlog                 200
+backlog                 100
 instances               1
 runOnStartUp            3
 extMaxIdleTime          30
