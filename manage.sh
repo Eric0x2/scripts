@@ -151,26 +151,33 @@ add                     lsapi:lsphp74 php
 extprocessor lsphp74 {
 type                    lsapi
 address                 uds://tmp/lshttpd/${domain}.sock
-maxConns                150
-env                     LSAPI_CHILDREN=15
-env                     LSAPI_AVOID_FORK=1
-env                     LSAPI_EXTRA_CHILDREN=5
-env                     LSAPI_MAX_IDLE=60
-env                     LSAPI_MAX_REQUESTS=10000
-initTimeout             60
+maxConns                200
+env                     LSAPI_CHILDREN=200
+env                     LSAPI_AVOID_FORK=0
+env                     LSAPI_EXTRA_CHILDREN=50
+env                     LSAPI_MAX_IDLE=30
+env                     LSAPI_MAX_IDLE_CHILDREN=50
+env                     PHP_LSAPI_MAX_REQUESTS=10000
+env                     LSAPI_MAX_PROCESS_TIME=120
+env                     LSAPI_PPID_NO_CHECK=1
+initTimeout             30
 retryTimeout            0
 persistConn             1
-pcKeepAliveTimeout      20
+pcKeepAliveTimeout      30
 respBuffer              0
 autoStart               2
 path                    /usr/local/lsws/lsphp74/bin/lsphp
-instances               10
+backlog                 200
+instances               1
+runOnStartUp            3
+extMaxIdleTime          30
+priority                0
 extUser                 nobody
 extGroup                nobody
 memSoftLimit            2047M
 memHardLimit            2047M
-procSoftLimit           400
-procHardLimit           500
+procSoftLimit           500
+procHardLimit           600
 }
 
 rewrite  {
