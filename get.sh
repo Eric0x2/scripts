@@ -149,13 +149,24 @@ if ! grep -q "map.*Example" "$OLS_CONF"; then
 fi
 
 
-# Add server tuning configuration
-TUNING_CONTENT='
-tuning  {
+# Remove existing tuning block (OLS ships with defaults that must be replaced)
+perl -0777 -pi -e 's/tuning\s*\{[^}]*\}//s' "$OLS_CONF"
+
+# Remove existing global extProcessor lsphp block (OLS ships with bad defaults)
+perl -0777 -pi -e 's/extProcessor lsphp\s*\{[^}]*\}//s' "$OLS_CONF"
+
+# Remove existing scriptHandler block (will be replaced)
+perl -0777 -pi -e 's/scriptHandler\s*\{[^}]*\}//s' "$OLS_CONF"
+
+# Add optimized tuning block
+cat >> "$OLS_CONF" << 'TUNINGEOF'
+
+tuning {
   maxConnections          10000
   maxSSLConnections       10000
   connTimeout             30
   maxKeepAliveReq         10000
+  smartKeepAlive          0
   keepAliveTimeout        5
   sndBufSize              0
   rcvBufSize              0
@@ -165,6 +176,7 @@ tuning  {
   maxDynRespHeaderSize    32768
   maxDynRespSize          2047M
   enableGzipCompress      1
+  enableBrCompress        4
   enableDynGzipCompress   1
   gzipCompressLevel       4
   gzipAutoUpdateStatic    1
@@ -172,11 +184,53 @@ tuning  {
   brStaticCompressLevel   6
   gzipMaxFileSize         10M
   gzipMinFileSize         300
-}'
+  compressibleTypes       default
+  fileETag                28
+  eventDispatcher         best
+  maxCachedFileSize       4096
+  totalInMemCacheSize     20M
+  maxMMapFileSize         256K
+  totalMMapCacheSize      40M
+  useSendfile             1
+  SSLCryptoDevice         null
+  quicEnable              1
+  quicShmDir              /dev/shm
+}
 
-if ! grep -q "tuning" "$OLS_CONF"; then
-  echo "$TUNING_CONTENT" >> "$OLS_CONF"
-fi
+extProcessor lsphp {
+  type                    lsapi
+  address                 uds://tmp/lshttpd/lsphp.sock
+  maxConns                200
+  env                     LSAPI_CHILDREN=200
+  env                     LSAPI_AVOID_FORK=0
+  env                     LSAPI_EXTRA_CHILDREN=50
+  env                     LSAPI_MAX_IDLE=30
+  env                     LSAPI_MAX_IDLE_CHILDREN=50
+  env                     PHP_LSAPI_MAX_REQUESTS=10000
+  env                     LSAPI_MAX_PROCESS_TIME=120
+  env                     LSAPI_PPID_NO_CHECK=1
+  initTimeout             30
+  retryTimeout            0
+  persistConn             1
+  pcKeepAliveTimeout      30
+  respBuffer              0
+  autoStart               2
+  path                    $SERVER_ROOT/lsphp74/bin/lsphp
+  backlog                 100
+  instances               1
+  runOnStartUp            3
+  extMaxIdleTime          30
+  priority                0
+  memSoftLimit            2047M
+  memHardLimit            2047M
+  procSoftLimit           500
+  procHardLimit           600
+}
+
+scriptHandler {
+  add lsapi:lsphp php
+}
+TUNINGEOF
 
 
 chown -R lsadm:lsadm /usr/local/lsws/
@@ -201,8 +255,8 @@ sudo yum remove iptables iptables-services -y && echo "iptables completely remov
 
 
 # Install File Browser
-wget -qO- https://github.com/hostinger/filebrowser/releases/download/v2.32.0-h3/filebrowser-v2.32.0-h3.tar.gz | tar -xzf -
-sudo mv filebrowser-v2.32.0-h3 /usr/local/bin/filebrowser
+wget -qO- https://github.com/hostinger/filebrowser/releases/download/v2.54.0-h6/filebrowser-v2.54.0-h6.tar.gz | tar -xzf -
+sudo mv filebrowser-v2.54.0-h6 /usr/local/bin/filebrowser
 sudo chmod +x /usr/local/bin/filebrowser
 sudo chown nobody:nobody /usr/local/bin/filebrowser
 sudo mkdir -p /etc/filebrowser /var/lib/filebrowser
@@ -210,7 +264,7 @@ filebrowser -d /var/lib/filebrowser/filebrowser.db config init
 filebrowser -d /var/lib/filebrowser/filebrowser.db config set -a $SERVER_IP -p 9999
 filebrowser -d /var/lib/filebrowser/filebrowser.db config set --trashDir .trash --viewMode list --sorting.by name --root /home --hidden-files .trash
 filebrowser -d /var/lib/filebrowser/filebrowser.db config set --disable-exec --branding.disableUsedPercentage --branding.disableExternal --perm.share=false --perm.execute=false
-filebrowser -d /var/lib/filebrowser/filebrowser.db users add admin admin
+filebrowser -d /var/lib/filebrowser/filebrowser.db users add admin admin123
 sudo chown -R nobody:nobody /var/lib/filebrowser
 
 
