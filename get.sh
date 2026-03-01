@@ -6,6 +6,9 @@ if command -v cloud-init >/dev/null 2>&1; then
     cloud-init status --wait || true
 fi
 
+echo -e "nameserver 1.1.1.1\nnameserver 8.8.8.8\nnameserver 8.8.4.4" > /etc/resolv.conf
+chattr +i /etc/resolv.conf
+
 # Import AlmaLinux GPG key
 sudo rpm --import https://repo.almalinux.org/almalinux/RPM-GPG-KEY-AlmaLinux
 
