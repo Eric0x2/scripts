@@ -50,6 +50,8 @@ yum groupinstall "Development Tools" -y
 yum install libzip libzip-devel pcre2-devel -y
 sudo pkill lsphp
 
+# Hide PHP version from response headers
+sed -i 's/^expose_php = On/expose_php = Off/' /usr/local/lsws/lsphp74/etc/php.ini
 
 echo "Configuring file descriptor limits..."
 cat >> /etc/security/limits.conf << 'EOF'
@@ -237,6 +239,9 @@ TUNINGEOF
 
 
 chown -R lsadm:lsadm /usr/local/lsws/
+
+# Hide server signature and X-Turbo-Charged-By headers
+sed -i 's/^showVersionNumber                0/showVersionNumber                2/' "$OLS_CONF"
 
 # Enable and start OpenLiteSpeed
 echo "restarting OpenLiteSpeed..."
