@@ -190,6 +190,13 @@ rewrite  {
 context / {
   location                \$VH_ROOT/public_html/
   allowBrowse             1
+  extraHeaders <<<END_extraHeaders
+Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+Referrer-Policy: no-referrer-when-downgrade
+Content-Security-Policy: default-src 'self' https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: https:; font-src 'self' data: https:; connect-src 'self' https:; frame-ancestors 'none'; upgrade-insecure-requests;
+END_extraHeaders
   rewrite  {
     enable                1
     inherit               1     # Inherit parent rules including autoLoadHtaccess
