@@ -242,6 +242,7 @@ chown -R lsadm:lsadm /usr/local/lsws/
 
 # Hide server signature and X-Turbo-Charged-By headers
 sed -i 's/^showVersionNumber                0/showVersionNumber                2/' "$OLS_CONF"
+sed -i '/^module cache/,/^}/{s/ls_enabled.*/ls_enabled 0/}' /usr/local/lsws/conf/httpd_config.conf
 
 # Enable and start OpenLiteSpeed
 echo "restarting OpenLiteSpeed..."
