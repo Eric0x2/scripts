@@ -81,38 +81,6 @@ EOF
     create_folder "${doc_root}"
     create_folder "${VHDIR}/${domain}"
 
-    # Create index.html if it doesn't exist
-    if [ ! -f "${doc_root}/index.html" ]; then
-        cat <<EOF > "${doc_root}/index.html"
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Welcome to $domain!</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f4f4;
-            color: #333;
-        }
-        h1 {
-            margin-top: 50px;
-            font-size: 2em;
-        }
-    </style>
-</head>
-<body>
-    <h1>Success! The $domain is working!</h1>
-</body>
-</html>
-EOF
-        change_owner "${doc_root}/index.html"
-    fi
-
     # Create Virtual Host Configuration if it doesn't exist
     if [ ! -f "${vh_conf_file}" ]; then
         cat > "${vh_conf_file}" <<EOF
